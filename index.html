@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi Store Marketplace</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #222;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .store-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+    .store-card {
+      background: white;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .store-card img {
+      max-width: 100%;
+      border-radius: 8px;
+    }
+    .store-card h3 {
+      margin: 1rem 0 0.5rem;
+    }
+    .price {
+      color: green;
+      font-weight: bold;
+      margin: 0.5rem 0;
+    }
+    .paypal-button {
+      margin-top: 1rem;
+    }
+  </style>
+  <script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=USD"></script>
+</head>
+<body>
+
+<header>
+  <h1>🛍️ متجر المتاجر الجاهزة</h1>
+  <p>اختر متجرك الجاهز وابدأ البيع الآن</p>
+</header>
+
+<div class="store-grid" id="storeGrid"></div>
+
+<script>
+  const stores = [
+    // 10 متاجر عادية
+    ...Array.from({ length: 10 }, (_, i) => ({
+      id: i + 1,
+      name: `متجر عادي ${i + 1}`,
+      image: `https://via.placeholder.com/300x200?text=Store+${i + 1}`,
+      price: 9,
+      type: "عادي"
+    })),
+    // 10 متاجر مميزة
+    ...Array.from({ length: 10 }, (_, i) => ({
+      id: i + 11,
+      name: `متجر مميز ${i + 1}`,
+      image: `https://via.placeholder.com/300x200?text=Premium+Store+${i + 1}`,
+      price: 20,
+      type: "مميز"
+    })),
+  ];
+
+  const storeGrid = document.getElementById("storeGrid");
+
+  stores.forEach(store => {
+    const card = document.createElement("div");
+    card.className = "store-card";
+    card.innerHTML = `
+      <img src="${store.image}" alt="${store.name}">
+      <h3>${store.name}</h3>
+      <p>نوع المتجر: ${store.type}</p>
+      <p class="price">$${store.price}</p>
+      <a href="store${store.id}.html">عرض التفاصيل</a>
+      <div class="paypal-button" id="paypal-button-${store.id}"></div>
+    `;
+    storeGrid.appendChild(card);
+
+    paypal.Buttons({
+      createOrder: function(data, actions) {
+        return actions.order.create({
+          purchase_units: [{
+            amount: { value: store.price.toString() },
+            description: store.name
+          }]
+        });
+      },
+      onApprove: function(data, actions) {
+        alert("✅ تم الدفع بنجاح لـ " + store.name);
+        return actions.order.capture();
+      }
+    }).render(`#paypal-button-${store.id}`);
+  });
+</script>
+
+</body>
+</html>
